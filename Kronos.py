@@ -41,13 +41,67 @@ API_RawSocket = socket.socket()
 
 Log(f'[System] Loaded configuration for "{SRV_Name} - {SRV_Vers}", {SRV_Desc}.')
 
+""" API Specific Functions & Variables """
+Kronos_File = "Kronos_Data.json"
+
+def Get_Articles():
+    Folders = ls("")
+    Articles = Folders[0]
+    Articles.remove("logs")
+    Articles.remove("__pycache__")
+    return Articles
+
+def Get_Views(Article):
+    with open(Kronos_File, "r", encoding="UTF-8") as Kronos:
+        Kronos_JSON = json.load(Kronos)
+    return len(Kronos_JSON[f"{Article}"])
+
+def Add_View(Article, Address):
+    with open(Kronos_File, "r", encoding="UTF-8") as Kronos:
+        Kronos_JSON = json.load(Kronos)
+        Article_JSON = Kronos_JSON[f"{Article}"]
+
+    if Address not in Article_JSON:
+        Article_JSON.append(Address)
+
+        Kronos_JSON[f"{Article}"] = Article_JSON
+        with open(Kronos_File, "w", encoding="UTF-8") as Kronos:
+            Kronos.write(json.dumps(Kronos_JSON, indent=2, sort_keys=True))
+        return 0
+    
+    else: return "ALREADY_VIEWED"
 
 """ Service Functions """
 def SirioAPI_Thread():
     Log(f'[System] INFO: Initializing SirioAPI...')
 
     async def Process_Request(Client_Request, Client_Address):
-        return Client_Request
+        Client_Request = Client_Request.split("/")
+        Articles = Get_Articles()
+        match Client_Request[0]:
+            case "GET":
+                if doesEntryExists(Client_Request, 1):
+                    match Client_Request[1]:
+                        case "ARTICLES":
+                            Stringify = ""
+                            for Article in Articles:
+                                Stringify+=f";{Article}"
+                            Stringify = Stringify[1:] # Janky! Avoids the first ";" to be present in the request
+                            return Stringify
+                        case "VIEWS":
+                            if doesEntryExists(Client_Request, 2):
+                                if Client_Request[2] in Articles:
+                                   return str(Get_Views(Client_Request[2]))
+                                else:
+                                    return "ARTICLE_NOT_FOUND"
+            case "VIEW":
+                if doesEntryExists(Client_Request, 1):
+                    if Client_Request[1] in Articles:
+                        Result = Add_View(Client_Request[1], Client_Address)
+                        if Result == 0: return "OK"
+                        else: return Result
+
+        return "INVALID_REQUEST"
         
     """ Socket Handlers """
     def RawSocket_Server():

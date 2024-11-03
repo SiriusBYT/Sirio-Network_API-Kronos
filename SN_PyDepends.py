@@ -29,7 +29,7 @@ def Log(Log):
         print(TLog)
 
 
-""" int() Functions """
+""" char[] Functions """
 # Logs the server's basic information
 def LoadCFG(CFG_File):
     CFG = configparser.ConfigParser()
@@ -38,8 +38,16 @@ def LoadCFG(CFG_File):
     Log(f'[System] Loaded configuration file "{CFG_File}".')
     return CFG
 
+def ls(Folder):
+    Path = os.getcwd() + "/" + Folder
+    try:
+        Results = next(os.walk(Path))
+        return [Results[1], Results[2]]
+    except: return [None, None]
+
 # Checks if a specified array number exist
 # 04/10/24: This function is retarded! Just do "if [variable here]:"!!!
+# 03/11/24 no u
 def doesEntryExists(Array,Number):
     try:
         Dummy = Array[Number]
@@ -48,7 +56,6 @@ def doesEntryExists(Array,Number):
         return False
 
 """ void() Functions """
-
 def Crash(Error, AllowRestart):
     Log(f"[CRASH] The server has crashed!")
     print(Error)
