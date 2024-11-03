@@ -71,12 +71,23 @@ def Add_View(Article, Address):
     
     else: return "ALREADY_VIEWED"
 
+def Update_Articles():
+    with open(Kronos_File, "r", encoding="UTF-8") as Kronos:
+        Kronos_JSON = json.load(Kronos)
+    Articles = Get_Articles()
+    for Article in Articles:
+        if Article not in Kronos_JSON:
+            Kronos_JSON[f"{Article}"] = []
+    with open(Kronos_File, "w", encoding="UTF-8") as Kronos:
+        Kronos.write(json.dumps(Kronos_JSON, indent=2, sort_keys=True))
+
 """ Service Functions """
 def SirioAPI_Thread():
     Log(f'[System] INFO: Initializing SirioAPI...')
 
     async def Process_Request(Client_Request, Client_Address):
         Client_Request = Client_Request.split("/")
+        Update_Articles()
         Articles = Get_Articles()
         match Client_Request[0]:
             case "GET":
