@@ -72,11 +72,13 @@ def Add_View(Article, Address):
     else: return "ALREADY_VIEWED"
 
 def Update_Articles():
+    Log(f"[System] Updating article list...")
     with open(Kronos_File, "r", encoding="UTF-8") as Kronos:
         Kronos_JSON = json.load(Kronos)
     Articles = Get_Articles()
     for Article in Articles:
         if Article not in Kronos_JSON:
+            Log(f"Found new article: {Article}")
             Kronos_JSON[f"{Article}"] = []
     with open(Kronos_File, "w", encoding="UTF-8") as Kronos:
         Kronos.write(json.dumps(Kronos_JSON, indent=2, sort_keys=True))
